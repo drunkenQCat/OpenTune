@@ -32,22 +32,17 @@ endif()
 # ==============================================================================
 # JUCE Configuration
 # ==============================================================================
-set(OPENTUNE_JUCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/JUCE-master")
+# Use JUCE_ARA fork for full ARA2 support
+set(OPENTUNE_JUCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/JUCE_ARA-master" CACHE PATH "JUCE framework root (default: JUCE_ARA fork)")
 add_subdirectory("${OPENTUNE_JUCE_DIR}")
 
-# ARA SDK Configuration (optional, for VST3 ARA support)
-set(OPENTUNE_ARA_SDK_PATH "" CACHE PATH "Path to ARA SDK 2.2.0 directory")
-if(OPENTUNE_ARA_SDK_PATH AND EXISTS "${OPENTUNE_ARA_SDK_PATH}")
-    # Try juce_set_ara_sdk_path first (JUCE 8.0.12+), fallback to global variable
-    if(COMMAND juce_set_ara_sdk_path)
-        juce_set_ara_sdk_path(${OPENTUNE_ARA_SDK_PATH})
-        message(STATUS "ARA SDK configured via juce_set_ara_sdk_path: ${OPENTUNE_ARA_SDK_PATH}")
-    else()
-        set(JUCE_GLOBAL_ARA_SDK_PATH ${OPENTUNE_ARA_SDK_PATH} CACHE STRING "ARA SDK path" FORCE)
-        message(STATUS "ARA SDK configured via JUCE_GLOBAL_ARA_SDK_PATH: ${OPENTUNE_ARA_SDK_PATH}")
-    endif()
+# ARA SDK Configuration (JUCE_ARA fork still requires external ARA SDK)
+set(OPENTUNE_ARA_SDK_PATH "${CMAKE_CURRENT_SOURCE_DIR}/ARA_SDK" CACHE PATH "Path to ARA SDK 2.2.0 directory")
+if(EXISTS "${OPENTUNE_ARA_SDK_PATH}")
+    juce_set_ara_sdk_path(${OPENTUNE_ARA_SDK_PATH})
+    message(STATUS "ARA SDK configured at: ${OPENTUNE_ARA_SDK_PATH}")
 else()
-    message(STATUS "ARA SDK not found - ARA support disabled")
+    message(WARNING "ARA SDK not found at ${OPENTUNE_ARA_SDK_PATH} - ARA support may be limited")
 endif()
 
 # Build formats (default: Standalone)

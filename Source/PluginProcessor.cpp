@@ -15,20 +15,50 @@
 #include <functional>
 
 // ============================================================================
-// ARA Factory Implementation (JUCE 8.0.12 uses global createARAFactory)
+// ARA Factory Implementation (JUCE_ARA fork with full ARA2 support)
 // ============================================================================
 // MUST be outside any namespace -- JUCE expects a C-style global function.
 #if JucePlugin_Enable_ARA
 
-#include <ARA_API/ARAInterface.h>
+#include <juce_audio_processors/utilities/ARA/juce_ARADocumentController.h>
 
-/**
- * JUCE 8.0.12 requires a global createARAFactory() function when
- * JucePlugin_Enable_ARA is defined.
- */
+namespace OpenTune
+{
+
+class OpenTuneARADocumentController : public juce::ARADocumentControllerSpecialisation
+{
+public:
+    OpenTuneARADocumentController (const ARA::PlugIn::PlugInEntry* entry,
+                                   const ARA::ARADocumentControllerHostInstance* instance)
+        : juce::ARADocumentControllerSpecialisation (entry, instance)
+    {
+    }
+
+    ~OpenTuneARADocumentController() override = default;
+
+private:
+    // Serialization
+    bool doRestoreObjectsFromStream (juce::ARAInputStream& input,
+                                     const juce::ARARestoreObjectsFilter* filter) override
+    {
+        return false; // Not implemented yet
+    }
+
+    bool doStoreObjectsToStream (juce::ARAOutputStream& output,
+                                 const juce::ARAStoreObjectsFilter* filter) override
+    {
+        return false; // Not implemented yet
+    }
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OpenTuneARADocumentController)
+};
+
+} // namespace OpenTune
+
+// Global createARAFactory() - required by JUCE ARA integration
 const ARA::ARAFactory* JUCE_CALLTYPE createARAFactory()
 {
-    return nullptr;
+    return juce::ARADocumentControllerSpecialisation::createARAFactory<OpenTune::OpenTuneARADocumentController>();
 }
 
 #endif // JucePlugin_Enable_ARA

@@ -23,20 +23,22 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            JUCE-master
+            JUCE_ARA-master
             onnxruntime-dml-1.24.4
             onnxruntime-win-x64-1.24.4
-          key: deps-${{ runner.os }}-juce8.0.12-onnx1.24.4
+          key: ara2-deps-${{ runner.os }}-juce-ara-onnx1.24.4
 
-      - name: Download JUCE Framework (if not cached)
+      - name: Download JUCE_ARA Framework (if not cached)
         if: steps.cache-deps.outputs.cache-hit != 'true'
         run: |
-          $juceUrl = "https://github.com/juce-framework/JUCE/archive/refs/tags/8.0.12.zip"
-          $juceZip = "juce-8.0.12.zip"
+          # Download JUCE_ARA fork at specific commit
+          $juceUrl = "https://github.com/Celemony/JUCE_ARA/archive/8bb8413a027413fe24a64365df5b1491285c6d17.zip"
+          $juceZip = "juce-ara.zip"
           Invoke-WebRequest -Uri $juceUrl -OutFile $juceZip
           Expand-Archive -Path $juceZip -DestinationPath "." -Force
-          Rename-Item -Path "JUCE-8.0.12" -NewName "JUCE-master" -Force
+          Rename-Item -Path "JUCE_ARA-8bb8413a027413fe24a64365df5b1491285c6d17" -NewName "JUCE_ARA-master" -Force
           Remove-Item $juceZip
+          Write-Output "JUCE_ARA downloaded"
         shell: pwsh
 
       - name: Clone ARA SDK
