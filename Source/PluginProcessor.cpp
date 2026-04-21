@@ -14,7 +14,32 @@
 #include <cstring>
 #include <functional>
 
+#if JucePlugin_Enable_ARA
+#include <juce_audio_processors/ara/juce_ARADocumentController.h>
+#endif
+
 namespace OpenTune {
+
+// ============================================================================
+// ARA Document Controller Specialisation
+// ============================================================================
+#if JucePlugin_Enable_ARA
+
+class OpenTuneARADocumentController : public juce::ARADocumentControllerSpecialisation
+{
+public:
+    explicit OpenTuneARADocumentController(juce::ARADocumentController& controller)
+        : juce::ARADocumentControllerSpecialisation(controller)
+    {
+    }
+
+    ~OpenTuneARADocumentController() override = default;
+
+private:
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(OpenTuneARADocumentController)
+};
+
+#endif // JucePlugin_Enable_ARA
 
 // ============================================================================
 // Export Helper Functions (Anonymous Namespace)
@@ -488,6 +513,31 @@ OpenTuneAudioProcessor::TrackState::AudioClip& OpenTuneAudioProcessor::TrackStat
     silentGaps = std::move(other.silentGaps);
     return *this;
 }
+
+// ============================================================================
+// ARA Factory Implementation
+// ============================================================================
+#if JucePlugin_Enable_ARA
+
+juce::ARA::ARAFactory OpenTuneAudioProcessor::getARAFactory()
+{
+    auto factory = juce::ARA::buildARAFactory(*this, "com.daya.opentune.ara");
+
+    // 声明支持的 ARA 能力：音高修正和时间拉伸
+    factory.supportedPlaybackTransformationFlags |=
+        juce::ARA::ARAPlaybackTransformationFlags::pitch |
+        juce::ARA::ARAPlaybackTransformationFlags::time;
+
+    return factory;
+}
+
+std::unique_ptr<juce::ARADocumentControllerSpecialisation>
+OpenTuneAudioProcessor::createDocumentControllerSpecialisation(juce::ARADocumentController& controller)
+{
+    return std::make_unique<OpenTuneARADocumentController>(controller);
+}
+
+#endif // JucePlugin_Enable_ARA
 
 OpenTuneAudioProcessor::OpenTuneAudioProcessor()
     : AudioProcessor(BusesProperties()

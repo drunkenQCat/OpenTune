@@ -83,6 +83,13 @@ public:
     OpenTuneAudioProcessor();
     ~OpenTuneAudioProcessor() override;
 
+#if JucePlugin_Enable_ARA
+    // ARA Factory
+    juce::ARA::ARAFactory getARAFactory() override;
+    std::unique_ptr<juce::ARADocumentControllerSpecialisation>
+        createDocumentControllerSpecialisation(juce::ARADocumentController& controller) override;
+#endif
+
     void prepareToPlay(double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
 

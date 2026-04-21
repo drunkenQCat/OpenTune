@@ -35,6 +35,15 @@ endif()
 set(OPENTUNE_JUCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/JUCE-master")
 add_subdirectory("${OPENTUNE_JUCE_DIR}")
 
+# ARA SDK Configuration (optional, for VST3 ARA support)
+set(OPENTUNE_ARA_SDK_PATH "" CACHE PATH "Path to ARA SDK 2.2.0 directory")
+if(OPENTUNE_ARA_SDK_PATH AND EXISTS "${OPENTUNE_ARA_SDK_PATH}")
+    juce_set_ara_sdk_path(${OPENTUNE_ARA_SDK_PATH})
+    message(STATUS "ARA SDK configured at: ${OPENTUNE_ARA_SDK_PATH}")
+else()
+    message(STATUS "ARA SDK not found - ARA support disabled")
+endif()
+
 # Build formats (default: Standalone)
 # Can be overridden to build plugins: VST3, CLAP, LV2, Standalone
 set(OPENTUNE_FORMATS "Standalone" CACHE STRING "JUCE plugin formats to build")
@@ -212,25 +221,28 @@ juce_add_plugin(OpenTune
     COMPANY_NAME "DAYA"
     COMPANY_WEBSITE "https://daya.audio"
     COMPANY_EMAIL "support@daya.audio"
-    
+
     # Plugin Identification
     PLUGIN_MANUFACTURER_CODE DAYA
     PLUGIN_CODE De77
-    
+
     # Product Information
     PRODUCT_NAME "OpenTune"
     BUNDLE_ID "com.daya.opentune"
     VERSION "${PROJECT_VERSION}"
-    
+
     # Formats (configurable via OPENTUNE_FORMATS)
     FORMATS ${JUCE_FORMATS}
-    
+
     # Plugin Type
     IS_SYNTH FALSE
     NEEDS_MIDI_INPUT FALSE
     NEEDS_MIDI_OUTPUT FALSE
     IS_MIDI_EFFECT FALSE
-    
+
+    # ARA Support (VST3/AU extension)
+    IS_ARA_EFFECT TRUE
+
     # Editor Configuration
     EDITOR_WANTS_KEYBOARD_FOCUS TRUE
     
@@ -488,6 +500,8 @@ target_compile_definitions(OpenTune
 if(WIN32)
     target_compile_definitions(OpenTune PUBLIC JUCE_ASIO=1)
     target_compile_definitions(OpenTune PRIVATE JUCE_USE_WINDOWS_MEDIA_FORMAT=1)
+    target_compile_definitions(OpenTune PUBLIC JUCE_PLUGINHOST_ARA=1)
+    target_compile_definitions(OpenTune PUBLIC JUCE_ENABLE_ARA=1)
 endif()
 
 # ==============================================================================
