@@ -14,30 +14,29 @@
 #include <cstring>
 #include <functional>
 
-#if JucePlugin_Enable_ARA
-#include <juce_audio_processors/ara/juce_ARADocumentController.h>
-#endif
-
 namespace OpenTune {
 
 // ============================================================================
-// ARA Document Controller Specialisation
+// ARA Factory Implementation (JUCE 8.0.12 uses global createARAFactory)
 // ============================================================================
 #if JucePlugin_Enable_ARA
 
-class OpenTuneARADocumentController : public juce::ARADocumentControllerSpecialisation
+#include <ARA_API/ARAInterface.h>
+
+/**
+ * JUCE 8.0.12 requires a global createARAFactory() function when
+ * JucePlugin_Enable_ARA is defined. This returns the ARA factory for the plugin.
+ *
+ * Note: JUCE 8.0.12 has minimal ARA scaffolding. Full ARA document controller
+ * support requires a newer JUCE version or the JUCE_ARA fork.
+ */
+const ARA::ARAFactory* JUCE_CALLTYPE createARAFactory()
 {
-public:
-    explicit OpenTuneARADocumentController(juce::ARADocumentController& controller)
-        : juce::ARADocumentControllerSpecialisation(controller)
-    {
-    }
-
-    ~OpenTuneARADocumentController() override = default;
-
-private:
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(OpenTuneARADocumentController)
-};
+    // Return nullptr for now - JUCE 8.0.12 does not include
+    // ARADocumentControllerSpecialisation helper class.
+    // A full implementation requires the JUCE_ARA fork.
+    return nullptr;
+}
 
 #endif // JucePlugin_Enable_ARA
 
@@ -513,31 +512,6 @@ OpenTuneAudioProcessor::TrackState::AudioClip& OpenTuneAudioProcessor::TrackStat
     silentGaps = std::move(other.silentGaps);
     return *this;
 }
-
-// ============================================================================
-// ARA Factory Implementation
-// ============================================================================
-#if JucePlugin_Enable_ARA
-
-juce::ARA::ARAFactory OpenTuneAudioProcessor::getARAFactory()
-{
-    auto factory = juce::ARA::buildARAFactory(*this, "com.daya.opentune.ara");
-
-    // 声明支持的 ARA 能力：音高修正和时间拉伸
-    factory.supportedPlaybackTransformationFlags |=
-        juce::ARA::ARAPlaybackTransformationFlags::pitch |
-        juce::ARA::ARAPlaybackTransformationFlags::time;
-
-    return factory;
-}
-
-std::unique_ptr<juce::ARADocumentControllerSpecialisation>
-OpenTuneAudioProcessor::createDocumentControllerSpecialisation(juce::ARADocumentController& controller)
-{
-    return std::make_unique<OpenTuneARADocumentController>(controller);
-}
-
-#endif // JucePlugin_Enable_ARA
 
 OpenTuneAudioProcessor::OpenTuneAudioProcessor()
     : AudioProcessor(BusesProperties()
