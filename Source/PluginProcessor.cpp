@@ -14,31 +14,26 @@
 #include <cstring>
 #include <functional>
 
-namespace OpenTune {
-
 // ============================================================================
 // ARA Factory Implementation (JUCE 8.0.12 uses global createARAFactory)
 // ============================================================================
+// MUST be outside any namespace -- JUCE expects a C-style global function.
 #if JucePlugin_Enable_ARA
 
 #include <ARA_API/ARAInterface.h>
 
 /**
  * JUCE 8.0.12 requires a global createARAFactory() function when
- * JucePlugin_Enable_ARA is defined. This returns the ARA factory for the plugin.
- *
- * Note: JUCE 8.0.12 has minimal ARA scaffolding. Full ARA document controller
- * support requires a newer JUCE version or the JUCE_ARA fork.
+ * JucePlugin_Enable_ARA is defined.
  */
 const ARA::ARAFactory* JUCE_CALLTYPE createARAFactory()
 {
-    // Return nullptr for now - JUCE 8.0.12 does not include
-    // ARADocumentControllerSpecialisation helper class.
-    // A full implementation requires the JUCE_ARA fork.
     return nullptr;
 }
 
 #endif // JucePlugin_Enable_ARA
+
+namespace OpenTune {
 
 // ============================================================================
 // Export Helper Functions (Anonymous Namespace)
