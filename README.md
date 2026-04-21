@@ -84,49 +84,75 @@ AI 的存在是为了帮助人，以人为本，带来更好的创作体验。
 解压后直接运行 .exe 文件，加载音频并设置目标音高即可开始处理。
 
 
-## Build Instructions
-## Build Requirements
+## 🛠️ 构建说明
 
-- CMake 3.22+
-- C++17 compiler (MSVC 2022 recommended on Windows)
-- Visual Studio 2022 (Windows)
+### 环境要求
 
-### Windows (MSVC)
+- **CMake** 3.22+
+- **C++17 编译器**（Windows 推荐 MSVC 2022）
+- **Visual Studio 2022**（带"使用 C++ 的桌面开发"工作负载）
+- **PowerShell 7+**（用于初始化脚本）
+- **Git**（用于拉取代码）
 
-```bash
-# Create build directory
+### 快速开始（推荐）
+
+使用一键初始化脚本自动下载并配置所有依赖：
+
+```powershell
+# 克隆仓库
+git clone https://github.com/drunkenQCat/OpenTune.git
+cd OpenTune
+
+# 运行初始化脚本（自动下载 JUCE、ASIO SDK、ONNX Runtime）
+.\scripts\init-dev.ps1
+
+# 构建项目
 mkdir build
 cd build
-
-# Generate project files
-cmake .. -G "Visual Studio 17 2022" -A x64
-
-# Build
+cmake .. -G "Visual Studio 17 2022" -A x64 -DOPENTUNE_FORMATS=Standalone
 cmake --build . --config Release
-
-# Output: build/OpenTune_artefacts/Release/Standalone/OpenTune.exe
 ```
 
-### Build Output
-
-After successful build, the Standalone executable will be located at:
+构建完成后，可执行文件位于：
 ```
 build/OpenTune_artefacts/Release/Standalone/OpenTune.exe
 ```
 
-Required DLLs and models will be automatically copied to the same directory.
+### 手动配置依赖
 
-## Dependencies (Included)
+如果不想使用初始化脚本，也可以手动下载以下依赖：
 
-- **JUCE** - Cross-platform audio framework
-- **ONNX Runtime 1.17.3** - ML inference engine
-- **r8brain-free-src** - High-quality audio resampling library
+| 依赖 | 版本 | 下载地址 |
+|------|------|----------|
+| **JUCE 框架** | 8.0.12 | https://github.com/juce-framework/JUCE/archive/refs/tags/8.0.12.zip |
+| **ASIO SDK** | latest | https://github.com/audiosdk/asio |
+| **ONNX Runtime CPU** | 1.24.4 | https://github.com/microsoft/onnxruntime/releases/download/v1.24.4/onnxruntime-win-x64-1.24.4.zip |
+| **ONNX Runtime DirectML** | 1.24.4 | https://api.nuget.org/v3-flatcontainer/microsoft.ml.onnxruntime.directml/1.24.4/microsoft.ml.onnxruntime.directml.1.24.4.nupkg |
 
-## AI Models
+下载后按以下结构放置：
 
-The application requires two ONNX models (included):
-- `models/rmvpe.onnx` - Pitch extraction model
-- `pc_nsf_hifigan_44.1k_ONNX/pc_nsf_hifigan_44.1k_hop512_128bin_2025.02.onnx` - Vocoder model
+```
+OpenTune/
+├── JUCE-master/                    # JUCE 框架
+├── onnxruntime-win-x64-1.24.4/    # ONNX Runtime CPU
+├── onnxruntime-dml-1.24.4/        # ONNX Runtime DirectML (NuGet 包解压)
+├── JUCE-master\modules\juce_audio_devices\native\asio\  # ASIO SDK 头文件
+├── models/                         # AI 模型文件（Git LFS）
+└── pc_nsf_hifigan_44.1k_ONNX/     # 声码器模型
+```
+
+### CI/CD 构建
+
+项目使用 GitHub Actions 进行持续集成：
+
+- **`publish` 分支**：完整构建（Standalone + VST3 + CLAP），自动发布 Release
+- **`dev` 分支**：仅构建 Standalone，用于日常开发测试
+
+开发者可以通过以下方式获取最新构建产物：
+
+1. 访问 [Actions](https://github.com/drunkenQCat/OpenTune/actions) 页面
+2. 点击最新的运行记录
+3. 下载 Artifacts（`OpenTune-standalone-exe` 仅包含 exe 文件，适合增量更新）
 
 
 ## 🤝 参与贡献
