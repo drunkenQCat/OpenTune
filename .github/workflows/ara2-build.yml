@@ -41,8 +41,11 @@ jobs:
 
       - name: Clone ARA SDK
         run: |
-          git clone --depth 1 --branch releases/2.2.0 https://github.com/Celemony/ARA_SDK.git ARA_SDK
-          Write-Output "ARA SDK cloned to ARA_SDK/"
+          git clone --branch releases/2.2.0 https://github.com/Celemony/ARA_SDK.git ARA_SDK
+          cd ARA_SDK
+          git submodule update --init --recursive
+          cd ..
+          Write-Output "ARA SDK cloned with submodules"
           Get-ChildItem ARA_SDK -Directory | Select-Object Name
         shell: pwsh
 
