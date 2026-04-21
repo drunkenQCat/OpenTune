@@ -20,7 +20,7 @@
 // MUST be outside any namespace -- JUCE expects a C-style global function.
 #if JucePlugin_Enable_ARA
 
-#include <juce_audio_processors/utilities/ARA/juce_ARADocumentController.h>
+#include <juce_audio_processors_headless/utilities/ARA/juce_ARADocumentController.h>
 
 namespace OpenTune
 {

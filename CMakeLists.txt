@@ -442,6 +442,7 @@ target_link_libraries(OpenTune
     PRIVATE
         juce::juce_audio_utils
         juce::juce_audio_processors
+        juce::juce_audio_processors_headless
         juce::juce_dsp
         juce::juce_opengl
         juce::juce_graphics
