@@ -31,23 +31,23 @@ jobs:
       - name: Download JUCE_ARA Framework (if not cached)
         if: steps.cache-deps.outputs.cache-hit != 'true'
         run: |
-          # Download JUCE_ARA fork at specific commit
-          $juceUrl = "https://github.com/Celemony/JUCE_ARA/archive/8bb8413a027413fe24a64365df5b1491285c6d17.zip"
+          # Download JUCE_ARA JUCE_6_condensed branch (stable ARA SDK API only)
+          $juceUrl = "https://github.com/Celemony/JUCE_ARA/archive/refs/heads/JUCE_6_condensed.zip"
           $juceZip = "juce-ara.zip"
           Invoke-WebRequest -Uri $juceUrl -OutFile $juceZip
           Expand-Archive -Path $juceZip -DestinationPath "." -Force
-          Rename-Item -Path "JUCE_ARA-8bb8413a027413fe24a64365df5b1491285c6d17" -NewName "JUCE_ARA-master" -Force
+          Rename-Item -Path "JUCE_ARA-JUCE_6_condensed" -NewName "JUCE_ARA-master" -Force
           Remove-Item $juceZip
-          Write-Output "JUCE_ARA downloaded"
+          Write-Output "JUCE_ARA downloaded (JUCE_6_condensed branch)"
         shell: pwsh
 
       - name: Clone ARA SDK
         run: |
-          git clone --depth 1 https://github.com/Celemony/ARA_SDK.git ARA_SDK
+          git clone --branch releases/2.2.0 --depth 1 https://github.com/Celemony/ARA_SDK.git ARA_SDK
           cd ARA_SDK
           git submodule update --init --recursive
           cd ..
-          Write-Output "ARA SDK cloned (main branch)"
+          Write-Output "ARA SDK cloned (releases/2.2.0)"
           Get-ChildItem ARA_SDK -Directory | Select-Object Name
         shell: pwsh
 
