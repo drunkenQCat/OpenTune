@@ -41,8 +41,9 @@ jobs:
 
       - name: Clone ARA SDK
         run: |
-          git clone --recursive --branch releases/2.2.0 https://github.com/Celemony/ARA_SDK.git ARA_SDK
+          git clone --depth 1 --branch releases/2.2.0 https://github.com/Celemony/ARA_SDK.git ARA_SDK
           Write-Output "ARA SDK cloned to ARA_SDK/"
+          Get-ChildItem ARA_SDK -Directory | Select-Object Name
         shell: pwsh
 
       - name: Download ONNX Runtime (if not cached)
