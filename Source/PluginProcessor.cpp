@@ -15,7 +15,7 @@
 #include <functional>
 
 // ============================================================================
-// ARA Factory Implementation (JUCE_ARA fork with full ARA2 support)
+// ARA Factory Implementation (JUCE_ARA develop branch with full ARA2 support)
 // ============================================================================
 // MUST be outside any namespace -- JUCE expects a C-style global function.
 #if JucePlugin_Enable_ARA
@@ -37,17 +37,23 @@ public:
     ~OpenTuneARADocumentController() override = default;
 
 private:
-    // Serialization
+    // ========================================================================
+    // 档案序列化 (必须实现的纯虚函数)
+    // ========================================================================
     bool doRestoreObjectsFromStream (juce::ARAInputStream& input,
                                      const juce::ARARestoreObjectsFilter* filter) override
     {
-        return false; // Not implemented yet
+        // TODO: 从流中恢复 ARA 对象
+        ignoreUnused (input, filter);
+        return false;
     }
 
     bool doStoreObjectsToStream (juce::ARAOutputStream& output,
                                  const juce::ARAStoreObjectsFilter* filter) override
     {
-        return false; // Not implemented yet
+        // TODO: 将 ARA 对象保存到流中
+        ignoreUnused (output, filter);
+        return false;
     }
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OpenTuneARADocumentController)
