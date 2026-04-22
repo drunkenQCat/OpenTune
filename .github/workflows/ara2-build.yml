@@ -31,14 +31,14 @@ jobs:
       - name: Download JUCE_ARA Framework (if not cached)
         if: steps.cache-deps.outputs.cache-hit != 'true'
         run: |
-          # Download JUCE_ARA JUCE_6_condensed branch (stable ARA SDK API only)
-          $juceUrl = "https://github.com/Celemony/JUCE_ARA/archive/refs/heads/JUCE_6_condensed.zip"
+          # Download JUCE_ARA develop branch
+          $juceUrl = "https://github.com/Celemony/JUCE_ARA/archive/refs/heads/develop.zip"
           $juceZip = "juce-ara.zip"
           Invoke-WebRequest -Uri $juceUrl -OutFile $juceZip
           Expand-Archive -Path $juceZip -DestinationPath "." -Force
-          Rename-Item -Path "JUCE_ARA-JUCE_6_condensed" -NewName "JUCE_ARA-master" -Force
+          Rename-Item -Path "JUCE_ARA-develop" -NewName "JUCE_ARA-master" -Force
           Remove-Item $juceZip
-          Write-Output "JUCE_ARA downloaded (JUCE_6_condensed branch)"
+          Write-Output "JUCE_ARA downloaded (develop branch)"
         shell: pwsh
 
       - name: Clone ARA SDK
