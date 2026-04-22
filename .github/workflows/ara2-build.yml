@@ -51,6 +51,16 @@ jobs:
           Get-ChildItem ARA_SDK -Directory | Select-Object Name
         shell: pwsh
 
+      - name: Patch JUCE_ARA isTimestretchReflectingTempo
+        run: |
+          $file = "JUCE_ARA-master/modules/juce_audio_formats/format/juce_ARAAudioReaders.cpp"
+          $content = Get-Content $file -Raw
+          # Comment out isTimestretchReflectingTempo call (ARA SDK 2.2.0 doesn't have this method)
+          $content = $content -replace 'playbackRegion->isTimestretchReflectingTempo\(\)', 'false /* isTimestretchReflectingTempo - requires newer ARA SDK */'
+          Set-Content -Path $file -Value $content -NoNewline
+          Write-Output "Patched juce_ARAAudioReaders.cpp"
+        shell: pwsh
+
       - name: Download ONNX Runtime (if not cached)
         if: steps.cache-deps.outputs.cache-hit != 'true'
         run: |
