@@ -9,15 +9,16 @@ on:
       - dev
 
 jobs:
-  build-standalone:
-    name: Windows Standalone (Dev)
+  # ==========================================
+  # Windows Standalone
+  # ==========================================
+  build-windows:
+    name: Windows Standalone
     runs-on: windows-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        # 编译不需要模型文件，跳过 LFS 拉取避免预算超支
 
-      # --- 第二层：缓存项目依赖库 ---
       - name: Cache Dependencies
         id: cache-deps
         uses: actions/cache@v4
@@ -26,10 +27,10 @@ jobs:
             JUCE-master
             onnxruntime-dml-1.24.4
             onnxruntime-win-x64-1.24.4
-          key: deps-${{ runner.os }}-juce8.0.12-onnx1.24.4-asio
+          key: deps-Windows-juce8.0.12-onnx1.24.4-asio
           restore-keys: |
-            deps-${{ runner.os }}-juce8.0.12-onnx1.24.4-asio
-            deps-${{ runner.os }}-
+            deps-Windows-juce8.0.12-onnx1.24.4-asio
+            deps-Windows-
 
       - name: Download JUCE Framework (if not cached)
         if: steps.cache-deps.outputs.cache-hit != 'true'
@@ -79,16 +80,15 @@ jobs:
           Remove-Item $ortZip
         shell: pwsh
 
-      # --- 第三层：缓存编译中间产物 ---
       - name: Cache Build Directory
         id: cache-build
         uses: actions/cache@v4
         with:
-          path: build-standalone
-          key: ${{ runner.os }}-build-standalone-${{ hashFiles('CMakeLists.txt', 'Source/**') }}
+          path: build-windows
+          key: Windows-build-${{ hashFiles('CMakeLists.txt', 'Source/**') }}
           restore-keys: |
-            ${{ runner.os }}-build-standalone-${{ hashFiles('CMakeLists.txt') }}-
-            ${{ runner.os }}-build-standalone-
+            Windows-build-${{ hashFiles('CMakeLists.txt') }}-
+            Windows-build-
 
       - name: Setup CMake
         uses: jwlawson/actions-setup-cmake@v2
@@ -100,9 +100,8 @@ jobs:
 
       - name: Configure and Build
         run: |
-          New-Item -ItemType Directory -Force -Path "build-standalone"
-          cd build-standalone
-          # Only run cmake configure if CMakeCache.txt doesn't exist
+          New-Item -ItemType Directory -Force -Path "build-windows"
+          cd build-windows
           if (!(Test-Path CMakeCache.txt)) {
             cmake .. -G "Visual Studio 17 2022" -A x64 -DOPENTUNE_FORMATS=Standalone
           }
@@ -112,6 +111,77 @@ jobs:
       - name: Upload OpenTune.exe
         uses: actions/upload-artifact@v4
         with:
-          name: OpenTune-dev-exe
-          path: build-standalone/OpenTune_artefacts/Release/Standalone/OpenTune.exe
+          name: OpenTune-dev-windows-exe
+          path: build-windows/OpenTune_artefacts/Release/Standalone/OpenTune.exe
+          retention-days: 7
+
+  # ==========================================
+  # macOS Standalone (arm64 only)
+  # ==========================================
+  build-macos:
+    name: macOS Standalone (arm64)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cache Dependencies
+        id: cache-deps
+        uses: actions/cache@v4
+        with:
+          path: |
+            JUCE-master
+            onnxruntime-osx-arm64-1.24.4
+          key: deps-macOS-juce8.0.12-onnx1.24.4-arm64
+          restore-keys: |
+            deps-macOS-juce8.0.12-onnx1.24.4-arm64
+            deps-macOS-
+
+      - name: Download JUCE Framework (if not cached)
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        run: |
+          curl -L -o juce-8.0.12.zip https://github.com/juce-framework/JUCE/archive/refs/tags/8.0.12.zip
+          unzip -q juce-8.0.12.zip
+          mv JUCE-8.0.12 JUCE-master
+          rm juce-8.0.12.zip
+
+      - name: Download ONNX Runtime (if not cached)
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        run: |
+          curl -L -o onnxruntime-macos.tar.gz https://github.com/microsoft/onnxruntime/releases/download/v1.24.4/onnxruntime-osx-arm64-1.24.4.tgz
+          tar -xzf onnxruntime-macos.tar.gz
+          rm onnxruntime-macos.tar.gz
+
+      - name: Cache Build Directory
+        id: cache-build
+        uses: actions/cache@v4
+        with:
+          path: build-macos
+          key: macOS-build-${{ hashFiles('CMakeLists.txt', 'Source/**') }}
+          restore-keys: |
+            macOS-build-${{ hashFiles('CMakeLists.txt') }}-
+            macOS-build-
+
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '3.22'
+
+      - name: Select Xcode
+        run: |
+          xcode-select -p
+          xcodebuild -version
+
+      - name: Build Standalone
+        run: |
+          mkdir build-macos
+          cd build-macos
+          cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=arm64 -DOPENTUNE_FORMATS=Standalone
+          cmake --build . --config Release -j$(sysctl -n hw.ncpu)
+
+      - name: Upload OpenTune.app
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenTune-dev-macos-app
+          path: build-macos/OpenTune_artefacts/Release/Standalone/OpenTune.app
           retention-days: 7
